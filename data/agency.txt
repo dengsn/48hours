@@ -1,0 +1,15 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang
+37,R-net,http://www.ns.nl,Europe/Amsterdam,nl
+52,Breng,http://www.breng.nl,Europe/Amsterdam,nl
+54,Valleilijn,http://www.valleilijn.nl,Europe/Amsterdam,nl
+60,Abellio Rail NRW,http://www.ns.nl/,Europe/Amsterdam,nl
+100,NS,http://www.ns.nl,Europe/Amsterdam,nl
+200,NS International,http://www.ns-hispeed.nl,Europe/Amsterdam,nl
+400,Syntus,http://www.syntus.nl,Europe/Amsterdam,nl
+500,Arriva,http://www.arriva.nl,Europe/Amsterdam,nl
+700,Veolia,http://www.veolia.nl,Europe/Amsterdam,nl
+750,Qbuzz,http://www.qbuzz.nl,Europe/Amsterdam,nl
+751,U-OV,http://www.ns.nl/,Europe/Amsterdam,nl
+910,DB,http://www.db.de,Europe/Amsterdam,nl
+911,Keolis,http://www.keolis.de,Europe/Amsterdam,nl
+920,NMBS,http://www.nmbs.be,Europe/Amsterdam,nl

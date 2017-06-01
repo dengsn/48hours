@@ -1,0 +1,32 @@
+route_id,agency_id,route_short_name,route_long_name,route_type
+100-B,100,,Bus,3
+750-B,750,,Bus,3
+751-B,751,,Bus,3
+54-BUS,54,,Stopbus i.p.v. trein,2
+100-BUS,100,,Stopbus i.p.v. trein,2
+500-BUS,500,,Stopbus i.p.v. trein,2
+911-BUS,911,,Stopbus i.p.v. trein,2
+910-CNL,910,,CityNightLine,2
+100-HSN,100,,Intercity direct,2
+100-IC,100,,Intercity,2
+200-IC,200,,Intercity,2
+200-ICE,200,,ICE International,2
+100-NSS,100,,Snelbus i.p.v. trein,3
+500-NSS,500,,Snelbus i.p.v. trein,3
+911-NSS,911,,Snelbus i.p.v. trein,3
+920-NSS,920,,Snelbus i.p.v. trein,3
+500-S,500,,Sneltrein,2
+700-S,700,,Sneltrein,2
+37-SPR,37,,Sprinter,2
+100-SPR,100,,Sprinter,2
+52-ST,52,,stoptrein,2
+54-ST,54,,stoptrein,2
+60-ST,60,,stoptrein,2
+100-ST,100,,stoptrein,2
+400-ST,400,,stoptrein,2
+500-ST,500,,stoptrein,2
+700-ST,700,,stoptrein,2
+910-ST,910,,stoptrein,2
+911-ST,911,,stoptrein,2
+920-ST,920,,stoptrein,2
+200-THA,200,,Thalys,2
