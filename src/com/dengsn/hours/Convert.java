@@ -16,7 +16,7 @@ public class Convert
 {
   public static void main(String[] args) throws FileNotFoundException, IOException
   {
-    System.setOut(new PrintStream(new FileOutputWtream("data/connections.txt")));
+    System.setOut(new PrintStream(new FileOutputStream("data/connections.txt")));
     
     // Read stations
     List<Station> stations = new CSVIterator(new FileReader("data/stations.txt")).stream()
