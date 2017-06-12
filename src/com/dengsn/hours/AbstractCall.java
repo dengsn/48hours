@@ -7,13 +7,11 @@ public class AbstractCall
 {
   // Variables
   private AbstractTrain train;
-  private int sequence;
-  private Station station;
-  private String platform;
   private LocalTime arrival;
   private LocalTime departure;
-  private boolean pickup;
-  private boolean dropoff;
+  private Station station;
+  private String platform;
+  private int sequence;
 
   // Getters and useters
   public AbstractTrain getTrain()
@@ -23,33 +21,6 @@ public class AbstractCall
   public AbstractCall useTrain(AbstractTrain train)
   {
     this.train = train;
-    return this;
-  }
-  public int getSequence()
-  {
-    return this.sequence;
-  }
-  public AbstractCall useSequence(int sequence)
-  {
-    this.sequence = sequence;
-    return this;
-  }
-  public Station getStation()
-  {
-    return this.station;
-  }
-  public AbstractCall useStation(Station station)
-  {
-    this.station = station;
-    return this;
-  }
-  public String getPlatform()
-  {
-    return this.platform;
-  }
-  public AbstractCall usePlatform(String platform)
-  {
-    this.platform = platform;
     return this;
   }
   public LocalTime getArrival()
@@ -70,22 +41,31 @@ public class AbstractCall
     this.departure = departure;
     return this;
   }
-  public boolean isPickup()
+  public Station getStation()
   {
-    return this.pickup;
+    return this.station;
   }
-  public AbstractCall usePickup(boolean pickup)
+  public AbstractCall useStation(Station station)
   {
-    this.pickup = pickup;
+    this.station = station;
     return this;
   }
-  public boolean isDropoff()
+  public String getPlatform()
   {
-    return this.dropoff;
+    return this.platform;
   }
-  public AbstractCall useDropoff(boolean dropoff)
+  public AbstractCall usePlatform(String platform)
   {
-    this.dropoff = dropoff;
+    this.platform = platform;
+    return this;
+  }
+  public int getSequence()
+  {
+    return this.sequence;
+  }
+  public AbstractCall useSequence(int sequence)
+  {
+    this.sequence = sequence;
     return this;
   }
 }

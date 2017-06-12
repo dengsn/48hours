@@ -8,9 +8,11 @@ import com.dengsn.hours.util.csv.CSVIterator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -88,30 +90,18 @@ public class Feed
         .collect(Collectors.toMap(AbstractTrain::getId,Function.identity()));
       
       // Read train times
-      /*Map<String,LinkedList<AbstractCall>> calls = new HashMap<>();
-      trains.keySet().forEach(id -> calls.put(id,new LinkedList<>()));
-      new CSVIterator(new FileReader("data/traintimes.txt")).stream()
-        .map(record ->
-        {
-          String id = record.get("stop_id").get();
-          Matcher m = platformPattern.matcher(id);
-          if (m.matches())
-            id = m.group(1);
-          Station station = this.getStation(id);
-          
-          return new AbstractCall()
-            .useTrain(trains.get(record.get("trip_id").get()))
-            .useSequence(record.getInt("stop_sequence").get())
-            .useStation(station)
-            .useArrival(record.get("arrival_time").map(date -> LocalTime.parse(date,timeFormat)).get())
-            .useDeparture(record.get("departure_time").map(date -> LocalTime.parse(date,timeFormat)).get())
-            .usePlatform(m.group(2))
-            .usePickup(record.getInt("pickup_type").get() == 0)
-            .useDropoff(record.getInt("drop_off_type").get() == 0);
-        })
-        .forEach(c -> calls.get(c.getTrain().getId()).add(c));
+      Map<String,LinkedList<AbstractCall>> calls = new HashMap<>();
+      //trains.keySet().forEach(id -> calls.put(id,new LinkedList<>()));
+      new CSVIterator(new FileReader("data/train_times.txt")).stream()
+        .map(record -> new AbstractCall()
+          .useTrain(this.getTrain(record.get(0)))
+          .useArrival(LocalTime.parse(record.get(1),timeFormat))
+          .useDeparture(LocalTime.parse(record.get(2),timeFormat))
+          .useStation(this.getStation(record.get(3)))
+          .usePlatform(record.get(4))
+          .useSequence(record.getInt(5)));
     
-      this.trains = new LinkedList<>();
+      /*this.trains = new LinkedList<>();
       List<AbstractTrain> ts = new LinkedList<>(trains.values());
       Collections.sort(ts,Comparator.comparing(AbstractTrain::getName));
       for (AbstractTrain train : ts)
