@@ -1,17 +1,17 @@
 package com.dengsn.hours.edge;
 
-import com.dengsn.hours.node.Node;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import com.dengsn.hours.node.Node;
 
 public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
 {
   // Management
   public abstract N getStart();
   public abstract N getEnd();
-  public abstract double getDistance();
+  public abstract double getWeight();
   
   // Returns all nodes in this edge
   public abstract List<N> getNodes();
@@ -30,17 +30,17 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
   }
   
   // Mirror this edge
-  public abstract Edge<N> mirror();
+  //public abstract Edge<N> mirror();
   
   // Mirror this edge with the specified node as start
-  public Edge<N> mirrorTo(N node)
+  /*public Edge<N> mirrorTo(N node)
   {
     if (this.getStart().equals(node))
       return this;
     else if (this.getEnd().equals(node))
       return this.mirror();
     else throw new IllegalStateException(this + " does not contain " + node);
-  }
+  }*/
   
   // Returns the oppposite node in this edge
   public N getOpposite(N node)
@@ -73,7 +73,7 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
   // Note: this class has a natural ordering that is inconsistent with equals
   @Override public int compareTo(Edge<N> edge)
   {
-    return Double.compare(this.getDistance(),edge.getDistance());
+    return Double.compare(this.getWeight(),edge.getWeight());
   }
   
   // Returns if an object is equal to this one
@@ -87,20 +87,20 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
       return false;
     else if (!Objects.equals(this.getEnd(),edge.getEnd()))
       return false;
-    else if (this.getDistance() == Double.NaN || edge.getDistance() == Double.NaN || Double.compare(this.getDistance(),edge.getDistance()) != 0)
+    else if (this.getWeight() == Double.NaN || edge.getWeight() == Double.NaN || Double.compare(this.getWeight(),edge.getWeight()) != 0)
       return false;
     else
       return true;
   }
   
-  // Convert to String
+  // Convert to string
   @Override public String toString()
   {
     StringBuilder sb = new StringBuilder();
     
     sb.append(this.getStart()).append(" <");
-    if (this.getDistance() != Double.NaN)
-      sb.append(" ").append(String.format(Locale.US,"%.2f",this.getDistance())).append(" ");
+    if (this.getWeight() != Double.NaN)
+      sb.append(String.format(Locale.US,"%.2f",this.getWeight()));
     sb.append("> ").append(this.getEnd());
     
     return sb.toString();

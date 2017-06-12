@@ -1,6 +1,5 @@
 package com.dengsn.hours.graph;
 
-import com.dengsn.hours.node.Node;
 import com.dengsn.hours.edge.Edge;
 import com.dengsn.hours.edge.Path;
 import java.util.Collection;
@@ -9,13 +8,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import com.dengsn.hours.node.Node;
 
 public class Graph<N extends Node, E extends Edge<N>>
 {
+  
   // Variables
   private final Collection<N> nodes;
   private final List<E> edges;
+  private BiPredicate<N,E> adjacency = (n,e) -> e.getStart().equals(n);
   
   // Constructor
   public Graph(Collection<N> nodes, List<E> edges)
@@ -55,15 +58,28 @@ public class Graph<N extends Node, E extends Edge<N>>
     return this.edges;
   }
   
+  // Returns the predicate for when a edge is adjacent to a node
+  public BiPredicate<N,E> getAdjacency()
+  {
+    return this.adjacency;
+  }
+  
+  // Uses a predicate for when an edge is direct to a node
+  public Graph<N,E> useAdjacency(BiPredicate<N,E> adjacency)
+  {
+    this.adjacency = adjacency;
+    return this;
+  }
+  
   // Returns all direct edges from a node
-  public List<E> getDirectEdges(N node, List<E> ignore)
+  public LinkedList<E> getDirectEdges(N node, List<E> ignore)
   {
     return this.getEdges().stream()
-      .filter(e -> e.getStart().equals(node))
+      .filter(e -> this.adjacency.test(node,e))
       .filter(e -> !ignore.contains(e))
       .collect(Collectors.toCollection(LinkedList::new));
   }
-  public List<E> getDirectEdges(N node)
+  public LinkedList<E> getDirectEdges(N node)
   {
     return this.getDirectEdges(node,new LinkedList<>());
   }  
@@ -81,7 +97,7 @@ public class Graph<N extends Node, E extends Edge<N>>
   {
     // Get the direct connections from this connection
     ignore.add(edge);
-    List<E> list = this.getDirectEdges(edge.getEnd(),ignore);
+    LinkedList<E> list = this.getDirectEdges(edge.getEnd(),ignore);
     Path<N,E> path = new Path<>(edge);
     
     // Check for dead ends and intersections
@@ -89,20 +105,18 @@ public class Graph<N extends Node, E extends Edge<N>>
       return path;
     
     // Add all forced connections from the current connection
-    E next = (E)list.get(0).mirrorTo(edge.getEnd());
-    return path
-      .combine(this.getForcedPath(next,ignore))
-      .mirrorTo(edge.getStart());
+    E next = list.getFirst();
+    return path.combine(this.getForcedPath(next,ignore));
   }
    
   // Returns all forced edges from a node
-  public List<Path<N,E>> getForcedEdges(N node, List<E> ignore)
+  public LinkedList<Path<N,E>> getForcedEdges(N node, List<E> ignore)
   {
     return this.getDirectEdges(node,ignore).stream()
       .map(c -> this.getForcedPath(c,ignore))
       .collect(Collectors.toCollection(LinkedList::new));
   }
-  public List<Path<N,E>> getForcedEdges(N node)
+  public LinkedList<Path<N,E>> getForcedEdges(N node)
   {
     return this.getForcedEdges(node,new LinkedList<>());
   }

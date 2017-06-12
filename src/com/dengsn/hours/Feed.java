@@ -3,139 +3,180 @@ package com.dengsn.hours;
 import com.dengsn.hours.edge.Connection;
 import com.dengsn.hours.graph.Graph;
 import com.dengsn.hours.graph.GraphVisualizer;
-import com.dengsn.hours.util.deserializers.Agency;
-import com.dengsn.hours.util.deserializers.Call;
-import com.dengsn.hours.util.deserializers.Route;
 import com.dengsn.hours.node.Station;
-import com.dengsn.hours.util.deserializers.Train;
-import com.dengsn.hours.util.csv.CSVDeserializer;
 import com.dengsn.hours.util.csv.CSVIterator;
-import com.dengsn.hours.util.deserializers.AgencyDeserializer;
-import com.dengsn.hours.util.deserializers.CallDeserializer;
-import com.dengsn.hours.util.deserializers.ConnectionDeserializer;
-import com.dengsn.hours.util.deserializers.RouteDeserializer;
-import com.dengsn.hours.util.deserializers.StationDeserializer;
-import com.dengsn.hours.util.deserializers.TrainDeserializer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.Reader;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.swing.JFrame;
 
 public class Feed
 {
   // Variables
-  private final Map<String,Agency> agencies = new HashMap<>();
-  private final Map<String,Route> routes = new HashMap<>();
-  private final Map<String,Station> stations = new HashMap<>();
-  private final Map<String,Train> trains = new HashMap<>();
+  private final Map<String,Station> stations;
+  private final Map<String,Agency> agencies;
+  private final Map<String,Route> types;
+  private final Map<String,AbstractTrain> trains;
   
   private final Graph<Station,Connection> graph;
+  //private List<Train> trains;
+  //private final Graph<JourneyStation,Journey> journeys;
   
   // Constructor
-  public Feed(File file)
+  public Feed(File file) throws FileNotFoundException
   {
+    //System.setOut(new PrintStream(new FileOutputStream("48hours.log")));
+    
     System.out.println("Loading transit feed...");
+    
+    Pattern platformPattern = Pattern.compile("([a-z]+)\\|(\\d+[abc]?(?:-\\d+[abc]?)?)");
+    DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("H:mm:ss").withResolverStyle(ResolverStyle.LENIENT);
     
     try
     {            
-      this.readAgencies(new FileReader("data/agency.txt"));
-      this.readRoutes(new FileReader("data/routes.txt"));
-      this.readStations(new FileReader("data/stops.txt"));
-      this.readTrains(new FileReader("data/trips.txt"));
-      this.readCalls(new FileReader("data/stop_times.txt"));
+      // Read stations
+      this.stations = new CSVIterator(new FileReader("data/stations.txt")).stream()
+        .map(record -> new Station(record.get(0),record.get(1))
+          .useLatitude(record.getDouble(2))
+          .useLongitude(record.getDouble(3)))
+        .collect(Collectors.toMap(Station::getId,Function.identity()));
       
-      CSVDeserializer<Connection> deserializer = new ConnectionDeserializer(this);
-      CSVIterator it = new CSVIterator(new FileReader("data/distances.txt"));
-      List<Connection> connections = it.stream()
-        .map(deserializer::deserialize)     
+      // Read connections
+      List<Connection> connections = new CSVIterator(new FileReader("data/connections.txt")).stream()
+        .map(record -> new Connection(this.getStation(record.get(0)),this.getStation(record.get(1)),record.getDouble(2)))
         .collect(Collectors.toCollection(LinkedList::new));
       
-      System.out.printf("- %d connections%n",it.position());
-      
-      this.graph = new Graph(this.stations.values(),new LinkedList<>());
-      for (Connection c : connections)
-      {
+      // Create graph
+      this.graph = new Graph<>(this.stations.values(),new LinkedList<>());
+      connections.forEach(c -> {
         this.graph.getEdges().add(c);
         this.graph.getEdges().add(c.mirror());
-      }
+      });
+      
+      // Read agencies
+      this.agencies = new CSVIterator(new FileReader("data/agencies.txt")).stream()
+        .map(record -> new Agency()
+          .useId(record.get(0))
+          .useName(record.get(1)))
+        .collect(Collectors.toMap(Agency::getId,Function.identity()));
+      
+      // Read types
+      this.types = new CSVIterator(new FileReader("data/types.txt")).stream()
+        .map(record ->  new Route()
+          .useId(record.get(0))
+          .useAgency(this.getAgency(record.get(1)))
+          .useName(record.get(2))
+          .useType(RouteType.of(record.getInt(3))))
+        .collect(Collectors.toMap(Route::getId,Function.identity()));
+      
+      // Read trains
+      this.trains = new CSVIterator(new FileReader("data/trains.txt")).stream()
+        .map(record -> new AbstractTrain()
+          .useId(record.get(0))
+          .useType(this.getType(record.get(1)))
+          .useName(record.get(2))
+          .useDirection(record.get(3)))
+        .collect(Collectors.toMap(AbstractTrain::getId,Function.identity()));
+      
+      // Read train times
+      /*Map<String,LinkedList<AbstractCall>> calls = new HashMap<>();
+      trains.keySet().forEach(id -> calls.put(id,new LinkedList<>()));
+      new CSVIterator(new FileReader("data/traintimes.txt")).stream()
+        .map(record ->
+        {
+          String id = record.get("stop_id").get();
+          Matcher m = platformPattern.matcher(id);
+          if (m.matches())
+            id = m.group(1);
+          Station station = this.getStation(id);
+          
+          return new AbstractCall()
+            .useTrain(trains.get(record.get("trip_id").get()))
+            .useSequence(record.getInt("stop_sequence").get())
+            .useStation(station)
+            .useArrival(record.get("arrival_time").map(date -> LocalTime.parse(date,timeFormat)).get())
+            .useDeparture(record.get("departure_time").map(date -> LocalTime.parse(date,timeFormat)).get())
+            .usePlatform(m.group(2))
+            .usePickup(record.getInt("pickup_type").get() == 0)
+            .useDropoff(record.getInt("drop_off_type").get() == 0);
+        })
+        .forEach(c -> calls.get(c.getTrain().getId()).add(c));
+    
+      this.trains = new LinkedList<>();
+      List<AbstractTrain> ts = new LinkedList<>(trains.values());
+      Collections.sort(ts,Comparator.comparing(AbstractTrain::getName));
+      for (AbstractTrain train : ts)
+      {
+        if (train.getType().getType() != RouteType.RAIL)
+          continue;
+        
+        LinkedList<AbstractCall> trainCalls = calls.get(train.getId());
+        if (trainCalls.isEmpty())
+          continue;
+        
+        Collections.sort(trainCalls,Comparator.comparing(r -> r.getSequence()));
+        
+        AbstractCall first = trainCalls.removeFirst();
+        while (!trainCalls.isEmpty())
+        {
+          try
+          {
+            AbstractCall last = trainCalls.removeFirst();
+            Train t = new Train(new Journey(this.graph.getShortestPath(first.getStation(),last.getStation()),first.getDeparture(),last.getArrival()));
+          
+            while (!(last.isPickup() || last.isDropoff()))
+            {
+              AbstractCall intermediate = last;
+              last = trainCalls.removeFirst();
+            
+              t.add(new Journey(this.graph.getShortestPath(intermediate.getStation(),last.getStation()),intermediate.getDeparture(),last.getArrival()));
+            }
+          
+            first = last;
+          
+            t.useId(train.getId());
+            t.useName(train.getType().getLongName() + " " + train.getName());
+          
+            System.out.println(t);
+          
+            this.trains.add(t);
+          }
+          catch (IllegalStateException ex)
+          {
+            System.out.println(ex.getMessage());
+          }
+        }
+      }*/
     }
     catch (FileNotFoundException ex)
     {
       throw new RuntimeException("Missing file: " + ex.getMessage(),ex);
     }
   }
-  public Feed(String fileName)
+  public Feed(String fileName) throws FileNotFoundException
   {
     this(new File(fileName));
   }
   
-  // Read agencies
-  private void readAgencies(Reader reader)
+  // Return the stations
+  public Collection<Station> getStations()
   {
-    CSVDeserializer<Agency> deserializer = new AgencyDeserializer(this);
-    CSVIterator it = new CSVIterator(reader);
-    it.stream()
-      .map(deserializer::deserialize)
-      .forEach(a -> this.agencies.put(a.getId(),a));
-      
-    System.out.printf("- %d agencies%n",it.position());
+    return this.stations.values();
   }
   
-  // Read routes
-  private void readRoutes(Reader reader)
+  // Return a station by identifier
+  public Station getStation(String identifier)
   {
-    CSVDeserializer<Route> deserializer = new RouteDeserializer(this);
-    CSVIterator it = new CSVIterator(reader);
-    it.stream()
-      .map(deserializer::deserialize)
-      .forEach(r -> this.routes.put(r.getId(),r));
-      
-    System.out.printf("- %d routes%n",it.position());
-  }
-  
-  // Read stations
-  private void readStations(Reader reader)
-  {
-    CSVDeserializer<Station> deserializer = new StationDeserializer(this);
-    CSVIterator it = new CSVIterator(reader);
-    it.stream()
-      .map(deserializer::deserialize)
-      .filter(Objects::nonNull)
-      .forEach(s -> this.stations.put(s.getId(),s));
-      
-    System.out.printf("- %d stations%n",it.position());
-  }
-  
-  // Read trains
-  private void readTrains(Reader reader)
-  {
-    CSVDeserializer<Train> deserializer = new TrainDeserializer(this);
-    CSVIterator it = new CSVIterator(reader);
-    it.stream()
-      .map(deserializer::deserialize)      
-      .forEach(t -> this.trains.put(t.getId(),t));
-      
-    System.out.printf("- %d trains%n",it.position());
-  }
-  
-  // Read calls
-  private void readCalls(Reader reader)
-  {
-    CSVDeserializer<Call> deserializer = new CallDeserializer(this);
-    CSVIterator it = new CSVIterator(reader);
-    it.stream()
-      .map(deserializer::deserialize)      
-      .forEach(c -> c.getTrain().getCalls().add(c));
-      
-    System.out.printf("- %d calls%n",it.position());
+    return this.stations.get(identifier);
   }
   
   // Return the agencies
@@ -150,38 +191,26 @@ public class Feed
     return this.agencies.get(identifier);
   }
   
-  // Return the stops
-  public Collection<Station> getStations()
+  // Return the types
+  public Collection<Route> getTypes()
   {
-    return this.stations.values();
+    return this.types.values();
   }
   
-  // Return a station by identifier
-  public Station getStation(String identifier)
+  // Return a type by identifier
+  public Route getType(String identifier)
   {
-    return this.stations.get(identifier);
-  }
-  
-  // Return the routes
-  public Collection<Route> getRoutes()
-  {
-    return this.routes.values();
-  }
-  
-  // Return a route by identifier
-  public Route getRoute(String identifier)
-  {
-    return this.routes.get(identifier);
+    return this.types.get(identifier);
   }
   
   // Return the trains
-  public Collection<Train> getTrains()
+  public Collection<AbstractTrain> getTrains()
   {
     return this.trains.values();
   }
   
-  // Return a train by identifier
-  public Train getTrain(String identifier)
+  // Return a type by identifier
+  public AbstractTrain getTrain(String identifier)
   {
     return this.trains.get(identifier);
   }
@@ -192,7 +221,6 @@ public class Feed
     Feed g = new Feed("gtfs-iffns-20170228.zip");
     
     /*g.getStations().stream()
-      .sorted()
       .forEach(System.out::println);*/
     
     /*g.getTrains().stream()
@@ -205,10 +233,11 @@ public class Feed
     frame.setContentPane(new GraphVisualizer(g.graph));
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setSize(800,1000);
-    frame.setVisible(true); 
+    frame.setVisible(true);
     
-    g.graph.getShortestPath(g.getStation("lw"),g.getStation("mt"))
-      .forEach(System.out::println);
+    //g.getTrains().forEach(System.out::println);
+    
+    //System.out.println(g.graph.getShortestPath(g.getStation("lw"),g.getStation("vs")));
     
     //g.getStopTimes().stream()
     //  .limit(50)

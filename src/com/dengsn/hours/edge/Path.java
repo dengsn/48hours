@@ -1,11 +1,13 @@
 package com.dengsn.hours.edge;
 
-import com.dengsn.hours.node.Node;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import com.dengsn.hours.node.Node;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements Iterable<E>
 {
@@ -31,10 +33,10 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   {
     return this.edges.getLast().getEnd();
   }
-  @Override public double getDistance()
+  @Override public double getWeight()
   {
     return this.edges.stream()
-      .collect(Collectors.summingDouble(Edge::getDistance));
+      .collect(Collectors.summingDouble(Edge::getWeight));
   }
   
   // Returns all the nodes in this path
@@ -52,25 +54,6 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   {
     return this.edges.stream()
       .anyMatch(c -> c.hasNode(node));
-  }
-  
-  // Mirror this path
-  @Override public Path<N,E> mirror()
-  {
-    Path<N,E> path = new Path(this.edges.getLast().mirror());
-    for (int i = this.edges.size() - 2; i >= 0; i --)
-      path.add((E)this.edges.get(i).mirror());    
-    return path;
-  }
-  
-  // Mirror this path with the node as start
-  @Override public Path<N,E> mirrorTo(Node node)
-  {
-    if (this.getStart().equals(node))
-      return this;
-    else if (this.getEnd().equals(node))
-      return this.mirror();
-    else throw new IllegalStateException(this + " does not contain " + node);
   }
   
   // Returns all the connections in this path
@@ -99,9 +82,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     // Add the connection
     N node = this.getConnecting(edge);
     if (this.getStart().equals(node))
-      this.edges.addFirst((E)edge.mirrorTo(this.getOpposite(this.getStart())));
+      this.edges.addFirst(edge);
     else if (this.getEnd().equals(node))
-      this.edges.addLast((E)edge.mirrorTo(this.getEnd()));
+      this.edges.addLast(edge);
       
     // Return the path
     return this;
@@ -121,9 +104,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     // Add the connection
     N node = this.getConnecting(path);
     if (this.getStart().equals(node))
-      (path.mirrorTo(this.getOpposite(this.getStart()))).forEach(this::add);
+      path.forEach(this::add);
     else if (this.getEnd().equals(node))
-      (path.mirrorTo(this.getEnd())).forEach(this::add);
+      path.forEach(this::add);
       
     // Return the path
     return this;
@@ -156,8 +139,8 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   {
     StringBuilder sb = new StringBuilder(this.getStart().toString());
     for (E t : this)
-      sb.append(" < ").append(t.getDistance()).append(" > ").append(t.getEnd());
-    sb.append(" (total ").append(String.format("%.2f",this.getDistance())).append(")");
+      sb.append(" <").append(t.getWeight()).append("> ").append(t.getEnd());
+    sb.append(" (total ").append(String.format("%.2f",this.getWeight())).append(")");
     return sb.toString();
   }
   
@@ -174,6 +157,12 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     }
     return list;
   }*/
+  
+  // Convert to stream
+  public Stream<E> stream()
+  {
+    return StreamSupport.stream(this.spliterator(),false);
+  }
   
   // Returns if the object is equal to this one
   @Override public boolean equals(Object o)

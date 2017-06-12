@@ -1,9 +1,8 @@
 package com.dengsn.hours.node;
 
-import java.util.Comparator;
 import java.util.Objects;
 
-public class Station implements Node, Comparable<Station>
+public class Station implements Node
 {
   // Variables
   private final String id;
@@ -21,24 +20,24 @@ public class Station implements Node, Comparable<Station>
   // Get and set fields
   @Override public String getId()
   {
-    return id;
+    return this.id;
   }
   @Override public String getName()
   {
-    return name;
+    return this.name;
   }
-  public double getLatitude()
+  @Override public double getLatitude()
   {
-    return latitude;
+    return this.latitude;
   }
   public Station useLatitude(double latitude)
   {
     this.latitude = latitude;
     return this;
   }
-  public double getLongitude()
+  @Override public double getLongitude()
   {
-    return longitude;
+    return this.longitude;
   }
   public Station useLongitude(double longitude)
   {
@@ -49,7 +48,7 @@ public class Station implements Node, Comparable<Station>
   // Convert to string
   @Override public String toString()
   {
-    return this.name + " <" + this.id + ">";
+    return this.getName();
   }
   
   // Return if this station is equal to another station
@@ -80,11 +79,5 @@ public class Station implements Node, Comparable<Station>
     hash = 19 * hash + (int) (Double.doubleToLongBits(this.latitude) ^ (Double.doubleToLongBits(this.latitude) >>> 32));
     hash = 19 * hash + (int) (Double.doubleToLongBits(this.longitude) ^ (Double.doubleToLongBits(this.longitude) >>> 32));
     return hash;
-  }
-
-  // Compares this agency to another
-  @Override public int compareTo(Station other)
-  {
-    return Comparator.comparing(Station::getName).compare(this,other);
   }
 }

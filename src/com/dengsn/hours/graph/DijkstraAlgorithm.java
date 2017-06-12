@@ -1,10 +1,11 @@
 package com.dengsn.hours.graph;
 
-import com.dengsn.hours.node.Node;
 import com.dengsn.hours.edge.Edge;
 import com.dengsn.hours.edge.Path;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import com.dengsn.hours.node.Node;
+import java.util.Objects;
 
 public class DijkstraAlgorithm<N extends Node, E extends Edge<N>>
 {
@@ -20,6 +21,20 @@ public class DijkstraAlgorithm<N extends Node, E extends Edge<N>>
   // Get the shortest path between two stations using Dijkstra's algorithm
   public Path<N,E> getShortestPath(N start, N end)
   {
+    // Check for nulls
+    Objects.requireNonNull(start);
+    Objects.requireNonNull(end);
+    
+    // Check if start equals end
+    if (start.equals(end))
+      throw new IllegalStateException("Cannot find a shortest path between equal nodes: " + start.toString());
+    
+    // Check if start or end has connections
+    if (this.graph.getDirectEdges(start).isEmpty())
+      throw new IllegalStateException("Cannot find a shortest path from a node with no edges: " + start.toString());
+    if (this.graph.getDirectEdges(end).isEmpty())
+      throw new IllegalStateException("Cannot find a shortest path to a node with no edges: " + end.toString());
+    
     // Create the queue
     Queue<Path<N,E>> queue = new PriorityQueue<>();
     
@@ -52,6 +67,6 @@ public class DijkstraAlgorithm<N extends Node, E extends Edge<N>>
     }
     
     // No shortest path was found
-    return null;
+    throw new IllegalStateException("Cannot find a shortest path between " + start.toString() + " and " + end.toString());
   }
 }

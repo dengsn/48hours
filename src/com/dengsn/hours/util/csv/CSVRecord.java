@@ -1,64 +1,45 @@
 package com.dengsn.hours.util.csv;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 public class CSVRecord
 {
   // Variables
-  private final List<String> tokens;
-  private final List<String> headers;
+  private final String[] tokens;
   
   // Constructor
-  CSVRecord(String[] tokens, String[] headers)
+  CSVRecord(String[] tokens)
   {
-    this.tokens = Arrays.asList(tokens);
-    this.headers = Arrays.asList(headers);
-  }
-  
-  // Return if a field is present
-  public boolean contains(String name)
-  {
-    return this.headers.contains(name);
-  }
-  
-  // Return the index for a field
-  public int indexOf(String name)
-  {
-    return this.headers.indexOf(name);
+    this.tokens = tokens;
   }
   
   // Return a field
-  public Optional<String> get(String name)
+  public String get(int index)
   {
-    if (this.contains(name))
-      return Optional.of(this.tokens.get(this.indexOf(name)));
-    else
-      return Optional.empty();
+    return this.tokens[index];
   }
   
   // Return a casted field
-  public Optional<Integer> getInt(String name)
+  public int getInt(int index)
   {
-    return this.get(name).map(Integer::parseInt);
+    return Integer.parseInt(this.get(index));
   }
-  public Optional<Long> getLong(String name)
+  public long getLong(int index)
   {
-    return this.get(name).map(Long::parseLong);
+    return Long.parseLong(this.get(index));
   }
-  public Optional<Float> getFloat(String name)
+  public float getFloat(int index)
   {
-    return this.get(name).map(Float::parseFloat);
+    return Float.parseFloat(this.get(index));
   }
-  public Optional<Double> getDouble(String name)
+  public double getDouble(int index)
   {
-    return this.get(name).map(Double::parseDouble);
+    return Double.parseDouble(this.get(index));
   }
   
-  // Convert tot string
+  // Convert to string
   @Override public String toString()
   {
-    return this.headers.toString() + " " + this.tokens.toString();
+    return Arrays.toString(this.tokens);
   }
 }

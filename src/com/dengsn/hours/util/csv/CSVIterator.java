@@ -1,12 +1,16 @@
 package com.dengsn.hours.util.csv;
 
 import java.io.Reader;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -16,9 +20,6 @@ public class CSVIterator implements Iterator<CSVRecord>
   private final Scanner scanner;
   private final char delimiter;
   private final char enclosure;
-  
-  private final String[] headers;
-  
   private int position = 0;
   
   // Constructors
@@ -27,8 +28,6 @@ public class CSVIterator implements Iterator<CSVRecord>
     this.scanner = new Scanner(reader).useDelimiter("\\r?\\n");
     this.delimiter = delimiter;
     this.enclosure = enclosure;
- 
-    this.headers = this.parse(this.scanner.next());
   }
   public CSVIterator(Reader reader, char delimiter)
   {
@@ -103,13 +102,23 @@ public class CSVIterator implements Iterator<CSVRecord>
   @Override public CSVRecord next()
   {
     this.position ++;    
-    return new CSVRecord(this.parse(this.scanner.next()),this.headers);
+    return new CSVRecord(this.parse(this.scanner.next()));
   }
   
   // Return a stream for this iterator
   public Stream<CSVRecord> stream()
   {
     return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this,Spliterator.ORDERED | Spliterator.IMMUTABLE),false);
+  }
+  
+  // Return a collection of the iterator
+  public <R> R collect(Collector<CSVRecord,?,R> collector)
+  {
+    return this.stream().collect(collector);
+  }
+  public <R extends Collection<CSVRecord>> R collect(Supplier<R> collectionFactory)
+  {
+    return this.stream().collect(Collectors.toCollection(collectionFactory));
   }
   
   // Return the position of the iterator

@@ -1,12 +1,12 @@
 package com.dengsn.hours.graph;
 
-import com.dengsn.hours.node.Node;
 import com.dengsn.hours.edge.Edge;
 import com.dengsn.hours.edge.Path;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.dengsn.hours.node.Node;
 
 public class YenAlgorithm<N extends Node, E extends Edge<N>>
 {

@@ -32,7 +32,7 @@ public final class Connection extends Edge<Station>
   {
     return this.end;
   }
-  @Override public double getDistance()
+  @Override public double getWeight()
   {
     return this.distance;
   }
@@ -53,18 +53,18 @@ public final class Connection extends Edge<Station>
   }
   
   // Mirror this connection
-  @Override public Connection mirror()
+  public Connection mirror()
   {
-    return new Connection(this.getEnd(),this.getStart(),this.getDistance());
+    return new Connection(this.getEnd(),this.getStart(),this.getWeight());
   }
   
   // Mirror this connection with the node as start
-  @Override public Connection mirrorTo(Station node)
+  public Connection mirrorTo(Station node)
   {
     if (this.getStart().equals(node))
       return this;
     else if (this.getEnd().equals(node))
       return this.mirror();
-    else throw new IllegalStateException(this + " does not contain " + node);
+    else throw new IllegalArgumentException(this + " does not contain " + node);
   }
 }

@@ -7,4 +7,10 @@ public interface Node
   
   // Return the name associated with this node
   public String getName();
+  
+  // Returns the latitude of this station
+  public double getLatitude();
+
+  // Returns the longitude of this station
+  public double getLongitude();
 }
