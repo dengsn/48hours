@@ -75,10 +75,10 @@ public class Train extends Path<Station,Journey>
     if (this.getEdges().size() > 0)
     {
       Journey first = this.getEdges().get(0);
-      sb.append("\n  ").append(FORMATTER.format(first.getDeparture())).append("   ").append(first.getStart());
+      sb.append("\n  ").append(FORMATTER.format(first.getDeparture())).append("V  ").append(first.getStart());
     
       for (Journey j : this.getEdges())
-        sb.append("\n  ").append(FORMATTER.format(j.getArrival())).append("A  ").append(j.getEnd());
+        sb.append("\n  ").append(FORMATTER.format(j.getArrival())).append("   ").append(j.getEnd());
     }
     
     return sb.toString();

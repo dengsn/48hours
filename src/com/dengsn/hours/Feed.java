@@ -54,7 +54,7 @@ public class Feed
         .collect(Collectors.toMap(Station::getId,Function.identity()));
       
       // Read connections
-      List<Connection> connections = new CSVIterator(new FileReader("data/connections.txt")).stream()
+      List<Connection> connections = new CSVIterator(new FileReader("data/connections_all.txt")).stream()
         .map(record -> new Connection(this.getStation(record.get(0)),this.getStation(record.get(1)),record.getDouble(2)))
         .collect(Collectors.toCollection(LinkedList::new));
       
@@ -214,9 +214,11 @@ public class Feed
     frame.setSize(800,1000);
     frame.setVisible(true);
     
-    g.getTrains().stream()
+    /*g.getTrains().stream()
       .filter(t -> t.getType().getType() == RouteType.RAIL)
       .sorted((a,b) -> Integer.valueOf(a.getName()).compareTo(Integer.valueOf(b.getName())))
-      .forEach(System.out::println);
+      .forEach(System.out::println);*/
+    
+    System.out.println(g.graph.dijkstraAlgorithm().getLongestPossiblePath(g.getStation("ut")));
   }
 }

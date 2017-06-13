@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import com.dengsn.hours.node.Node;
+import java.util.NoSuchElementException;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements Iterable<E>
 {
@@ -15,8 +15,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   private final LinkedList<E> edges = new LinkedList<>();
   
   // Constructor
-  public Path()
+  public Path() 
   {
+    // Start with an empty path
   }
   public Path(E edge)
   {
@@ -30,14 +31,23 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Management
   @Override public N getStart()
   {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
     return this.edges.getFirst().getStart();
   }
   @Override public N getEnd()
   {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
     return this.edges.getLast().getEnd();
   }
   @Override public double getWeight()
   {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
     return this.edges.stream()
       .collect(Collectors.summingDouble(Edge::getWeight));
   }
@@ -45,6 +55,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Returns all the nodes in this path
   @Override public List<N> getNodes()
   {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
     List<N> list = new LinkedList<>();
     list.add(this.getStart());
     for (E connection : this)
@@ -55,6 +68,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Returns if this path contains the specified node
   @Override public boolean hasNode(N node) 
   {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
     return this.edges.stream()
       .anyMatch(c -> c.hasNode(node));
   }
@@ -66,35 +82,40 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   }
   
   // Returns the count of connections in this path
-  public int getSize()
+  public int size()
   {
     return this.edges.size();
+  }
+  
+  // Returns if this path is empty
+  public boolean isEmpty()
+  {
+    return this.edges.isEmpty();
   }
   
   // Add a connection to this path
   public Path<N,E> add(E edge)
   {
-    // If the path is empty, then just add
-    if (this.edges.isEmpty())
-    {
-      this.edges.add(edge);
-      return this;
-    }
-    
     // Check if the given connection is null
-    if (edge == null)
-      return this;
+    Objects.requireNonNull(edge);
+    
+    // If the path is empty, then just add
+    if (this.isEmpty())
+      this.edges.add(edge);
     
     // Check if this connection connects
-    if (!this.isConnecting(edge))
+    else if (!this.isConnecting(edge))
       throw new IllegalStateException(edge + " does not connect to " + this);
     
     // Add the connection
-    N node = this.getConnecting(edge);
-    if (this.getStart().equals(node))
-      this.edges.addFirst(edge);
-    else if (this.getEnd().equals(node))
-      this.edges.addLast(edge);
+    else
+    {
+      N node = this.getConnecting(edge);
+      if (this.getStart().equals(node))
+        this.edges.addFirst(edge);
+      else if (this.getEnd().equals(node))
+        this.edges.addLast(edge);
+    }
       
     // Return the path
     return this;
@@ -103,27 +124,26 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Add an adjacent path to this path
   public Path<N,E> combine(Path<N,E> path)
   {
-    // If the path is empty, then just add
-    if (this.edges.isEmpty())
-    {
-      this.edges.addAll(path.edges);
-      return this;
-    }
-    
     // Check if the given path is null
-    if (path == null)
-      return this;
+    Objects.requireNonNull(path);
+    
+    // If the path is empty, then just add
+    if (this.isEmpty())
+      this.edges.addAll(path.edges);
     
     // Check if this connection connects
-    if (!this.isConnecting(path))
+    else if (!this.isConnecting(path))
       throw new IllegalStateException(path + " does not connect to " + this);
     
     // Add the connection
-    N node = this.getConnecting(path);
-    if (this.getStart().equals(node))
-      path.forEach(this::add);
-    else if (this.getEnd().equals(node))
-      path.forEach(this::add);
+    else
+    {
+      N node = this.getConnecting(path);
+      if (this.getStart().equals(node))
+        path.forEach(this::add);
+      else if (this.getEnd().equals(node))
+        path.forEach(this::add);
+    }
       
     // Return the path
     return this;
@@ -135,12 +155,18 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     return this.edges.iterator();
   }
   
+  // Returns to stream
+  public Stream<E> stream()
+  {
+    return this.edges.stream();
+  }
+  
   // Get the first part of a pat until the given node
   public Path<N,E> cut(int fromIndex, int toIndex)
   {
     if (fromIndex < 0)
       throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
-    if (toIndex > this.getSize())
+    if (toIndex > this.size())
       throw new IndexOutOfBoundsException("toIndex = " + toIndex);
     if (fromIndex >= toIndex)
       throw new IllegalArgumentException("fromIndex is higher than or equal to toIndex");
@@ -165,12 +191,6 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     return list;
   }*/
   
-  // Convert to stream
-  public Stream<E> stream()
-  {
-    return StreamSupport.stream(this.spliterator(),false);
-  }
-  
   // Returns if the object is equal to this one
   @Override public boolean equals(Object o)
   {
@@ -180,53 +200,15 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     Path path = (Path)o;
     if (!Objects.equals(this.edges,path.edges))
       return false;
-    else return true;
+    else 
+      return true;
   }
+  
+  // Returns the hash code for this path
   @Override public int hashCode()
   {
     int hash = 7;
     hash = 29 * hash + Objects.hashCode(this.edges);
     return hash;
   }
-  
-  // Intercities
-  /*public List<Path> toIntercities()
-  {
-    Stack<Path> stack = new Stack<>();
-    for (DirectConnection c : this)
-    {
-      if (stack.isEmpty() || stack.peek().getEnd().isIntercityStation())
-        stack.add(new Path());
-      stack.peek().add(c);
-    }    
-    while (!stack.isEmpty() && stack.peek().isEmpty())
-      stack.pop();
-    return stack;
-  }
-  
-  // Cut
-  public Path cut(Station source, Station target)
-  {
-    Queue<Connection> q = new LinkedList<>(this);
-    Path p = new Path();
-    boolean inside = false;
-    while (!q.isEmpty())
-    {
-      Connection c = q.poll();
-      System.out.println("    " + c);
-      if (c.getStart().equals(source))
-        inside = true;
-      
-      if (inside)
-        p.add(c);
-      
-      if (c.getEnd().equals(target))
-        break;
-    }
-    return p;
-  }
-  public Path cut(ConnectionUtils c)
-  {
-    return this.cut(c.getStart(),c.getEnd());
-  }*/
 }

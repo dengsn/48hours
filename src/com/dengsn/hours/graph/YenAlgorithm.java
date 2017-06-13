@@ -45,7 +45,7 @@ public class YenAlgorithm<N extends Node, E extends Edge<N>>
         Graph<N,E> spurGraph = new Graph<>(this.graph);
         for (Path<N,E> path : solutions)
         {
-          if (path.getSize() >= rootPath.getSize() && path.cut(0,i).equals(rootPath))
+          if (path.size() >= rootPath.size() && path.cut(0,i).equals(rootPath))
             spurGraph.getEdges().remove(path.getEdges().get(i));
         }
         rootPath.forEach(spurGraph.getEdges()::remove);

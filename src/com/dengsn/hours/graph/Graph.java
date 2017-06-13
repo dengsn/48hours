@@ -130,14 +130,14 @@ public class Graph<N extends Node, E extends Edge<N>>
   }
   
   // Get the shortest path between two nodes
-  public Path<N,E> getShortestPath(N start, N end)
+  public DijkstraAlgorithm<N,E> dijkstraAlgorithm()
   {
-    return new DijkstraAlgorithm<>(this).getShortestPath(start,end);
+    return new DijkstraAlgorithm<>(this);
   }
   
   // Get K-shortest paths between two nodes
-  public List<Path<N,E>> getShortestPaths(N start, N end, int count)
+  public YenAlgorithm<N,E> yenAlgorithm()
   {
-    return new YenAlgorithm<>(this).getShortestPaths(start,end,count);
+    return new YenAlgorithm<>(this);
   }
 }

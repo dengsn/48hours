@@ -412,4 +412,3 @@ std,gln,4.0,4
 rai,asb,5.0,6
 gvc,laa,1.5,0
 lls,zl,51.0
-,0
