@@ -14,7 +14,6 @@ import com.dengsn.hours.node.Node;
 
 public class Graph<N extends Node, E extends Edge<N>>
 {
-  
   // Variables
   private final Collection<N> nodes;
   private final List<E> edges;
@@ -56,6 +55,15 @@ public class Graph<N extends Node, E extends Edge<N>>
   public List<E> getEdges()
   {
     return this.edges;
+  }
+  
+  // Returns an edge between two nodes if existent
+  public E getEdge(Node start, Node end)
+  {
+    return this.edges.stream()
+      .filter(e -> e.getStart().equals(start) && e.getEnd().equals(end))
+      .findFirst()
+      .orElse(null);
   }
   
   // Returns the predicate for when a edge is adjacent to a node

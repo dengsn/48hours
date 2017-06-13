@@ -57,7 +57,7 @@ public class Station implements Node
     if (o == null || this.getClass() != o.getClass())
       return false;
 
-    Station station = (Station) o;
+    Station station = (Station)o;
     if (!Objects.equals(this.id,station.id))
       return false;
     else if (!Objects.equals(this.name,station.name))

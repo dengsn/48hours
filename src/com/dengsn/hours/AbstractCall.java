@@ -1,24 +1,26 @@
 package com.dengsn.hours;
 
+import com.dengsn.hours.edge.Train;
 import com.dengsn.hours.node.Station;
 import java.time.LocalTime;
 
 public class AbstractCall
 {
   // Variables
-  private AbstractTrain train;
+  private Train train;
   private LocalTime arrival;
   private LocalTime departure;
   private Station station;
   private String platform;
   private int sequence;
+  private boolean halting;
 
   // Getters and useters
-  public AbstractTrain getTrain()
+  public Train getTrain()
   {
     return this.train;
   }
-  public AbstractCall useTrain(AbstractTrain train)
+  public AbstractCall useTrain(Train train)
   {
     this.train = train;
     return this;
@@ -67,5 +69,20 @@ public class AbstractCall
   {
     this.sequence = sequence;
     return this;
+  }
+  public boolean isHalting()
+  {
+    return this.halting;
+  }
+  public AbstractCall useHalting(boolean halting)
+  {
+    this.halting = halting;
+    return this;
+  }
+  
+  // Convert to string
+  @Override public String toString()
+  {
+    return "[" + this.getPlatform() + "] " + this.getStation().toString();
   }
 }

@@ -40,11 +40,11 @@ public class CSVIterator implements Iterator<CSVRecord>
   
   // Internal parsing function
   private String[] parse(String line)
-  {
+  {    
     // Check if the line is null or empty
     if (line == null)
       throw new NullPointerException("line cannot be null");
-    if (line.isEmpty())
+    if (line.trim().isEmpty())
       return new String[0];
     
     // List for storing the tokens

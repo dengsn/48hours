@@ -15,6 +15,9 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   private final LinkedList<E> edges = new LinkedList<>();
   
   // Constructor
+  public Path()
+  {
+  }
   public Path(E edge)
   {
     this.edges.add(edge);
@@ -71,6 +74,13 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Add a connection to this path
   public Path<N,E> add(E edge)
   {
+    // If the path is empty, then just add
+    if (this.edges.isEmpty())
+    {
+      this.edges.add(edge);
+      return this;
+    }
+    
     // Check if the given connection is null
     if (edge == null)
       return this;
@@ -93,6 +103,13 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   // Add an adjacent path to this path
   public Path<N,E> combine(Path<N,E> path)
   {
+    // If the path is empty, then just add
+    if (this.edges.isEmpty())
+    {
+      this.edges.addAll(path.edges);
+      return this;
+    }
+    
     // Check if the given path is null
     if (path == null)
       return this;
@@ -132,16 +149,6 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     for (int i = fromIndex + 1; i < toIndex; i ++)
       path.add(this.edges.get(i));
     return path;
-  }
-  
-  // Returns a string containing a chain of the connections
-  public String toChainString()
-  {
-    StringBuilder sb = new StringBuilder(this.getStart().toString());
-    for (E t : this)
-      sb.append(" <").append(t.getWeight()).append("> ").append(t.getEnd());
-    sb.append(" (total ").append(String.format("%.2f",this.getWeight())).append(")");
-    return sb.toString();
   }
   
   // Returns a list of paths referencing intercity nodes

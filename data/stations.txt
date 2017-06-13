@@ -1,4 +1,5 @@
-﻿ac,Abcoude,52.2796589706,4.97645795345
+﻿dummy,dummy,0,0
+ac,Abcoude,52.2796589706,4.97645795345
 adh,Leeuwarden Achter De Hoven,53.197555,5.80409
 ah,Arnhem Centraal,51.9853459706,5.89922368526
 ahbf,Aachen Hbf,50.768073,6.09053

@@ -2,6 +2,8 @@ package com.dengsn.hours.edge;
 
 import com.dengsn.hours.node.Station;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -80,18 +82,5 @@ public class Journey extends Edge<Station>
   @Override public boolean hasNode(Station node)
   {
     return this.connection.hasNode(node);
-  }
-  
-  // Convert to string
-  @Override public String toString()
-  {
-    StringBuilder sb = new StringBuilder();
-    
-    sb.append(this.getStart()).append(" ").append(this.getDeparture()).append(" <");
-    if (this.getWeight() != Double.NaN)
-      sb.append(String.format(Locale.US,"%.2f",this.getWeight()));
-    sb.append("> ").append(this.getEnd()).append(" ").append(this.getArrival());
-    
-    return sb.toString();
   }
 }
