@@ -1,30 +1,35 @@
-package com.dengsn.hours.node;
+package com.dengsn.hours.model;
 
+import com.dengsn.hours.graph.node.Node;
+import com.dengsn.hours.model.Identity;
 import java.util.Objects;
 
-public class Station implements Node
+public class Station implements Node, Identity
 {
   // Variables
-  private final String id;
-  private final String name;
+  private String id;
+  private String name;
   private double latitude;
   private double longitude;
-  
-  // Constructor
-  public Station(String id, String name)
-  {
-    this.id = id;
-    this.name = name;
-  }
   
   // Get and set fields
   @Override public String getId()
   {
     return this.id;
   }
+  @Override public Station useId(String id)
+  {
+    this.id = id;
+    return this;
+  }
   @Override public String getName()
   {
     return this.name;
+  }
+  public Station useName(String name)
+  {
+    this.name = name;
+    return this;
   }
   @Override public double getLatitude()
   {

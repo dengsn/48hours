@@ -1,12 +1,13 @@
-package com.dengsn.hours.graph;
+package com.dengsn.hours.graph.algorithm;
 
-import com.dengsn.hours.edge.Edge;
-import com.dengsn.hours.edge.Path;
+import com.dengsn.hours.graph.Graph;
+import com.dengsn.hours.graph.edge.Path;
+import com.dengsn.hours.graph.edge.Edge;
+import com.dengsn.hours.graph.node.Node;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.dengsn.hours.node.Node;
 
 public class YenAlgorithm<N extends Node, E extends Edge<N>>
 {
@@ -14,7 +15,7 @@ public class YenAlgorithm<N extends Node, E extends Edge<N>>
   private final Graph<N,E> graph;
   
   // Constructor
-  YenAlgorithm(Graph<N,E> graph)
+  public YenAlgorithm(Graph<N,E> graph)
   {
     this.graph = graph;
   }
@@ -39,13 +40,13 @@ public class YenAlgorithm<N extends Node, E extends Edge<N>>
       for (int i = 1; i < solution.getEdges().size(); i ++)
       {
         // Remove the root connections from the graph
-        Path<N,E> rootPath = solution.cut(0,i);
+        Path<N,E> rootPath = solution.subPath(0,i);
         
         // Create a new graph with the root path removed
         Graph<N,E> spurGraph = new Graph<>(this.graph);
         for (Path<N,E> path : solutions)
         {
-          if (path.size() >= rootPath.size() && path.cut(0,i).equals(rootPath))
+          if (path.size() >= rootPath.size() && path.subPath(0,i).equals(rootPath))
             spurGraph.getEdges().remove(path.getEdges().get(i));
         }
         rootPath.forEach(spurGraph.getEdges()::remove);

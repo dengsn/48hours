@@ -1,4 +1,4 @@
-package com.dengsn.hours.util.csv;
+package com.dengsn.hours.csv;
 
 public class CSVException extends RuntimeException
 {

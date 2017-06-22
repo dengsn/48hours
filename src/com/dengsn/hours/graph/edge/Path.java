@@ -1,11 +1,11 @@
-package com.dengsn.hours.edge;
+package com.dengsn.hours.graph.edge;
 
+import com.dengsn.hours.graph.node.Node;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.dengsn.hours.node.Node;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -60,8 +60,8 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     
     List<N> list = new LinkedList<>();
     list.add(this.getStart());
-    for (E connection : this)
-      list.add(connection.getEnd());
+    for (E edge : this)
+      list.add(edge.getEnd());
     return list;
   }
   
@@ -71,17 +71,28 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     if (this.isEmpty()) 
       throw new NoSuchElementException("The path is empty");
     
+    Objects.requireNonNull(node);
     return this.edges.stream()
       .anyMatch(c -> c.hasNode(node));
   }
   
-  // Returns all the connections in this path
+  // Returns all the edges in this path
   public List<E> getEdges()
   {
     return this.edges;
   }
   
-  // Returns the count of connections in this path
+  // Returns if this path contains an edge
+  public boolean hasEdge(E edge)
+  {
+    if (this.isEmpty()) 
+      throw new NoSuchElementException("The path is empty");
+    
+    Objects.requireNonNull(edge);
+    return this.edges.contains(edge);
+  }
+  
+  // Returns the count of edges in this path
   public int size()
   {
     return this.edges.size();
@@ -93,28 +104,31 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     return this.edges.isEmpty();
   }
   
-  // Add a connection to this path
+  // Add a edge to this path
   public Path<N,E> add(E edge)
   {
-    // Check if the given connection is null
+    // Check if the given edge is null
     Objects.requireNonNull(edge);
     
     // If the path is empty, then just add
     if (this.isEmpty())
       this.edges.add(edge);
     
-    // Check if this connection connects
-    else if (!this.isConnecting(edge))
-      throw new IllegalStateException(edge + " does not connect to " + this);
-    
-    // Add the connection
+    // Check if this edge connects
     else
     {
-      N node = this.getConnecting(edge);
-      if (this.getStart().equals(node))
-        this.edges.addFirst(edge);
-      else if (this.getEnd().equals(node))
-        this.edges.addLast(edge);
+      N connecting = this.getConnecting(edge);
+      if (connecting == null)
+        throw new IllegalStateException(edge + " does not connect to " + this);
+    
+      // Add the edge
+      else
+      {
+        if (this.getEnd().equals(connecting))
+          this.edges.addLast(edge);
+        else if (this.getStart().equals(connecting))
+          this.edges.addFirst(edge);
+      }
     }
       
     // Return the path
@@ -131,11 +145,11 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     if (this.isEmpty())
       this.edges.addAll(path.edges);
     
-    // Check if this connection connects
+    // Check if this edge connects
     else if (!this.isConnecting(path))
       throw new IllegalStateException(path + " does not connect to " + this);
     
-    // Add the connection
+    // Add the edge
     else
     {
       N node = this.getConnecting(path);
@@ -162,7 +176,7 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
   }
   
   // Get the first part of a pat until the given node
-  public Path<N,E> cut(int fromIndex, int toIndex)
+  public Path<N,E> subPath(int fromIndex, int toIndex)
   {
     if (fromIndex < 0)
       throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
@@ -176,20 +190,6 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
       path.add(this.edges.get(i));
     return path;
   }
-  
-  // Returns a list of paths referencing intercity nodes
-  /*public List<Path<N,E>> filtered(Node.Type type)
-  {
-    LinkedList<Path<N,E>> list = new LinkedList<>();
-    for (E connection : this)
-    {
-      if (list.isEmpty() || list.getLast().getEnd().getType().compareTo(type) <= 0)
-        list.add(new Path(connection));
-      else
-        list.getLast().add(connection);
-    }
-    return list;
-  }*/
   
   // Returns if the object is equal to this one
   @Override public boolean equals(Object o)
@@ -210,5 +210,14 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     int hash = 7;
     hash = 29 * hash + Objects.hashCode(this.edges);
     return hash;
+  }
+  
+  // Convert to string
+  @Override public String toString()
+  {
+    if (this.isEmpty())
+      return "Empty path";
+    
+    return super.toString();
   }
 }

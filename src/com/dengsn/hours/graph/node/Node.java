@@ -1,4 +1,4 @@
-package com.dengsn.hours.node;
+package com.dengsn.hours.graph.node;
 
 public interface Node
 {

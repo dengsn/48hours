@@ -1,4 +1,4 @@
-package com.dengsn.hours.util.csv;
+package com.dengsn.hours.csv;
 
 import java.io.Reader;
 import java.util.Collection;

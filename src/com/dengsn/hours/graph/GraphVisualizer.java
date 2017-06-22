@@ -1,7 +1,7 @@
 package com.dengsn.hours.graph;
 
-import com.dengsn.hours.edge.Connection;
-import com.dengsn.hours.node.Station;
+import com.dengsn.hours.graph.edge.Edge;
+import com.dengsn.hours.graph.node.Node;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -9,13 +9,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
-public class GraphVisualizer extends JPanel
+public class GraphVisualizer<N extends Node,E extends Edge<N>> extends JPanel
 {  
   // Variables
-  private final Graph<Station,Connection> graph;
+  private final Graph<N,E> graph;
   
   // Constructor
-  public GraphVisualizer(Graph<Station,Connection> graph)
+  public GraphVisualizer(Graph<N,E> graph)
   {
     super.setDoubleBuffered(true);
     
@@ -32,7 +32,7 @@ public class GraphVisualizer extends JPanel
     graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON); 
     
     double minX = Double.NaN, minY = Double.NaN, maxX = Double.NaN, maxY = Double.NaN;
-    for (Station n : this.graph.getNodes())
+    for (N n : this.graph.getNodes())
     {
       if (this.graph.getDirectEdges(n).isEmpty())
         continue;
@@ -55,7 +55,7 @@ public class GraphVisualizer extends JPanel
     double factorY = (size.height - 48) / (maxY - minY);
     
     // Draw the edges
-    for (Connection e : this.graph.getEdges())
+    for (E e : this.graph.getEdges())
     {
       int x1 = (int)((e.getStart().getLongitude() - minX) * factorX) + 24;
       int y1 = size.height - ((int)((e.getStart().getLatitude() - minY) * factorY) + 24);
@@ -67,12 +67,15 @@ public class GraphVisualizer extends JPanel
     }
     
     // Draw the nodes
-    for (Station n : this.graph.getNodes())
+    for (N n : this.graph.getNodes())
     {
       int x = (int)((n.getLongitude() - minX) * factorX) + 24;
       int y = size.height - ((int)((n.getLatitude() - minY) * factorY) + 24);
       
-      g.setColor(Color.RED);
+      if (this.graph.getDirectEdges(n).isEmpty())
+        g.setColor(Color.BLUE);
+      else
+        g.setColor(Color.RED);
       g.fillOval(x-2,y-2,5,5);
     }
   }

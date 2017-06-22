@@ -1,10 +1,10 @@
-package com.dengsn.hours.edge;
+package com.dengsn.hours.graph.edge;
 
+import com.dengsn.hours.graph.node.Node;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import com.dengsn.hours.node.Node;
 
 public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
 {
@@ -56,11 +56,12 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
   // Returns the node that connects the edge to this one or null if it doesn't connect
   public N getConnecting(Edge<N> edge)
   {
-    if (this.getStart().equals(edge.getStart()) || this.getStart().equals(edge.getEnd()))
-      return this.getStart();
-    else if (this.getEnd().equals(edge.getStart()) || this.getEnd().equals(edge.getEnd()))
+    if (this.getEnd().equals(edge.getStart()))
       return this.getEnd();
-    else return null;
+    else if (this.getStart().equals(edge.getEnd()))
+      return this.getStart();
+    else 
+      return null;
   }
   
   // Returns if the edge can connect to this one
@@ -74,6 +75,17 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
   @Override public int compareTo(Edge<N> edge)
   {
     return Double.compare(this.getWeight(),edge.getWeight());
+  }
+  
+  // Returns if an edge conencts the same points as this one
+  public boolean same(Edge<N> edge)
+  {
+    if (!Objects.equals(this.getStart(),edge.getStart()))
+      return false;
+    else if (!Objects.equals(this.getEnd(),edge.getEnd()))
+      return false;
+    else
+      return true;
   }
   
   // Returns if an object is equal to this one

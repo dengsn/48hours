@@ -1,15 +1,15 @@
-package com.dengsn.hours;
+package com.dengsn.hours.model.journey;
 
-import com.dengsn.hours.edge.Train;
-import com.dengsn.hours.node.Station;
-import java.time.LocalTime;
+import com.dengsn.hours.model.journey.Train;
+import com.dengsn.hours.model.Station;
+import java.time.LocalDateTime;
 
-public class AbstractCall
+public class Call
 {
   // Variables
   private Train train;
-  private LocalTime arrival;
-  private LocalTime departure;
+  private LocalDateTime arrival;
+  private LocalDateTime departure;
   private Station station;
   private String platform;
   private int sequence;
@@ -20,25 +20,25 @@ public class AbstractCall
   {
     return this.train;
   }
-  public AbstractCall useTrain(Train train)
+  public Call useTrain(Train train)
   {
     this.train = train;
     return this;
   }
-  public LocalTime getArrival()
+  public LocalDateTime getArrival()
   {
     return this.arrival;
   }
-  public AbstractCall useArrival(LocalTime arrival)
+  public Call useArrival(LocalDateTime arrival)
   {
     this.arrival = arrival;
     return this;
   }
-  public LocalTime getDeparture()
+  public LocalDateTime getDeparture()
   {
     return this.departure;
   }
-  public AbstractCall useDeparture(LocalTime departure)
+  public Call useDeparture(LocalDateTime departure)
   {
     this.departure = departure;
     return this;
@@ -47,7 +47,7 @@ public class AbstractCall
   {
     return this.station;
   }
-  public AbstractCall useStation(Station station)
+  public Call useStation(Station station)
   {
     this.station = station;
     return this;
@@ -56,7 +56,7 @@ public class AbstractCall
   {
     return this.platform;
   }
-  public AbstractCall usePlatform(String platform)
+  public Call usePlatform(String platform)
   {
     this.platform = platform;
     return this;
@@ -65,7 +65,7 @@ public class AbstractCall
   {
     return this.sequence;
   }
-  public AbstractCall useSequence(int sequence)
+  public Call useSequence(int sequence)
   {
     this.sequence = sequence;
     return this;
@@ -74,7 +74,7 @@ public class AbstractCall
   {
     return this.halting;
   }
-  public AbstractCall useHalting(boolean halting)
+  public Call useHalting(boolean halting)
   {
     this.halting = halting;
     return this;

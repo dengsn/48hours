@@ -1,37 +1,47 @@
-package com.dengsn.hours.edge;
+package com.dengsn.hours.model.journey;
 
-import com.dengsn.hours.Route;
-import com.dengsn.hours.node.Station;
+import com.dengsn.hours.model.Identity;
+import com.dengsn.hours.model.util.Service;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
+import java.util.LinkedList;
 
-public class Train extends Path<Station,Journey>
+public class Train extends LinkedList<Call> implements Identity
 {
   // Constants
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.LENIENT);
   
   // Variables
   private String id;
-  private Route type;
+  private Service service;
+  private TrainType type;
   private String name;
   private String direction;
-  private String service;
 
   // Getters and setters
-  public String getId()
+  @Override public String getId()
   {
     return this.id;
   }
-  public Train useId(String id)
+  @Override public Train useId(String id)
   {
     this.id = id;
     return this;
   }
-  public Route getType()
+  public Service getService()
+  {
+    return this.service;
+  }
+  public Train useService(Service service)
+  {
+    this.service = service;
+    return this;
+  }
+  public TrainType getType()
   {
     return this.type;
   }
-  public Train useType(Route type)
+  public Train useType(TrainType type)
   {
     this.type = type;
     return this;
@@ -54,33 +64,15 @@ public class Train extends Path<Station,Journey>
     this.direction = direction;
     return this;
   }
-  public String getService()
-  {
-    return this.service;
-  }
-  public Train useService(String service)
-  {
-    this.service = service;
-    return this;
-  }
   
   // Convert to string
   @Override public String toString()
   {
-    StringBuilder sb = new StringBuilder(this.type.toString());
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.type.toString());
     if (!this.name.equals("0"))
       sb.append(" ").append(this.name);
     sb.append(" naar ").append(this.direction);
-    
-    if (this.getEdges().size() > 0)
-    {
-      Journey first = this.getEdges().get(0);
-      sb.append("\n  ").append(FORMATTER.format(first.getDeparture())).append("V  ").append(first.getStart());
-    
-      for (Journey j : this.getEdges())
-        sb.append("\n  ").append(FORMATTER.format(j.getArrival())).append("   ").append(j.getEnd());
-    }
-    
     return sb.toString();
   }
 }

@@ -1,34 +1,35 @@
-package com.dengsn.hours.edge;
+package com.dengsn.hours.graph.edge;
 
-import com.dengsn.hours.node.Station;
+import com.dengsn.hours.graph.node.Node;
+import com.dengsn.hours.model.Station;
 import java.util.LinkedList;
 import java.util.List;
 
-public final class Connection extends Edge<Station>
+public class Connection<N extends Node> extends Edge<N>
 {
   // Variables
-  private final Station start;
-  private final Station end;
+  private final N start;
+  private final N end;
   private final double distance;
   
   // Constructor
-  public Connection(Station start, Station end, double distance)
+  public Connection(N start, N end, double distance)
   {
     this.start = start;
     this.end = end;
     this.distance = distance;
   }
-  public Connection(Station start, Station end)
+  public Connection(N start, N end)
   {
     this(start,end,Double.NaN);
   }
   
   // Management
-  @Override public Station getStart()
+  @Override public N getStart()
   {
     return this.start;
   }
-  @Override public Station getEnd()
+  @Override public N getEnd()
   {
     return this.end;
   }
@@ -37,29 +38,29 @@ public final class Connection extends Edge<Station>
     return this.distance;
   }
   
-  // Returns all nodes in this connection
-  @Override public List<Station> getNodes()
+  // Returns all nodes in this edge
+  @Override public List<N> getNodes()
   {
-    List<Station> list = new LinkedList<>();
+    List<N> list = new LinkedList<>();
     list.add(this.getStart());
     list.add(this.getEnd());
     return list;
   }
   
   // Returns if this connection contains the node
-  @Override public boolean hasNode(Station node)
+  @Override public boolean hasNode(N node)
   {
     return this.getStart().equals(node) || this.getEnd().equals(node);
   }
   
-  // Mirror this connection
-  public Connection mirror()
+  // Mirror this edge
+  public Connection<N> mirror()
   {
-    return new Connection(this.getEnd(),this.getStart(),this.getWeight());
+    return new Connection<>(this.getEnd(),this.getStart(),this.getWeight());
   }
   
-  // Mirror this connection with the node as start
-  public Connection mirrorTo(Station node)
+  // Mirror this edge with the node as start
+  public Connection<N> mirrorTo(Station node)
   {
     if (this.getStart().equals(node))
       return this;

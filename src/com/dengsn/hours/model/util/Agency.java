@@ -1,17 +1,19 @@
-package com.dengsn.hours;
+package com.dengsn.hours.model.util;
 
-public final class Agency
+import com.dengsn.hours.model.Identity;
+
+public final class Agency implements Identity
 {
   // Variables
   private String id;
   private String name;
 
   // Getters and setters
-  public String getId()
+  @Override public String getId()
   {
     return this.id;
   }
-  public Agency useId(String id)
+  @Override public Agency useId(String id)
   {
     this.id = id;
     return this;
