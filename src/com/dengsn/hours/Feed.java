@@ -362,20 +362,30 @@ public final class Feed
     feed.getJourneyGraph().removeConnection(feed.getStations().get("hlm"),feed.getStations().get("ledn"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("ledn"),feed.getStations().get("rtd"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("rtd"),feed.getStations().get("ut"),feed.getConnectionGraph());
-    /*feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("amf"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("amf"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("amf"),feed.getStations().get("hvs"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("hvs"),feed.getStations().get("shl"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("shl"),feed.getStations().get("zl"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("zl"),feed.getStations().get("ut"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("ah"),feed.getConnectionGraph());
     feed.getJourneyGraph().removeConnection(feed.getStations().get("ah"),feed.getStations().get("dv"),feed.getConnectionGraph());
-    feed.getJourneyGraph().removeConnection(feed.getStations().get("dv"),feed.getStations().get("es"),feed.getConnectionGraph());*/
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("dv"),feed.getStations().get("es"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("es"),feed.getStations().get("amf"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("amf"),feed.getStations().get("gn"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("gn"),feed.getStations().get("zl"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("zl"),feed.getStations().get("ah"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ah"),feed.getStations().get("ht"),feed.getConnectionGraph());
     
     feed.getJourneyGraph().calculateTree();
     
-    JourneyPath longest = feed.getJourneyGraph().getLongestPossiblePath(feed.getStations().get("ut"),feed.getDate().atTime(8,12));
-    System.out.println(longest);
-    for (Journey journey : longest)
-      System.out.printf("- %s%n",journey);
+    JourneyPath longest = feed.getJourneyGraph().getLongestPossiblePath(feed.getStations().get("ht"),feed.getDate().atTime(20,37));
+    if (longest != null)
+    {
+      System.out.println(longest);
+      for (Journey journey : longest)
+        System.out.printf("- %s%n",journey);
+    }
+    else
+      System.out.println("No longest path found");
   }
 }

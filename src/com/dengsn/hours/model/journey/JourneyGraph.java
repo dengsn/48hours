@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-public class JourneyGraph extends Graph<JourneyStation,Journey>
+public final class JourneyGraph extends Graph<JourneyStation,Journey>
 {
   // Variables
   private Map<Station,List<Journey>> tree;
@@ -119,8 +119,6 @@ public class JourneyGraph extends Graph<JourneyStation,Journey>
     {
       if (last != null && last.getTrain().equals(e.getTrain()))
         return true;
-      else if (last != null && last.getEnd().getPlatform().equals(e.getStart().getPlatform()) && e.getStart().getTime().isAfter(node.getTime()))
-        return true;
       else
         return e.getStart().getTime().isAfter(node.getTime().plusMinutes(2));
     };
@@ -128,7 +126,7 @@ public class JourneyGraph extends Graph<JourneyStation,Journey>
     // Get the recent edges with both directions ignored
     useable = edges.stream()
       .filter(catchable)
-      .filter(e -> e.getStart().getTime().isBefore(node.getTime().plusMinutes(30)))
+      .filter(e -> e.getStart().getTime().isBefore(node.getTime().plusMinutes(60)))
       .filter(e -> !ignore.stream().anyMatch(j -> ignoreBoth.test(e,j)))
       .collect(first);
     if (!useable.isEmpty())
@@ -137,7 +135,7 @@ public class JourneyGraph extends Graph<JourneyStation,Journey>
     // Get the recent edges with forward directions ignored
     useable = edges.stream()
       .filter(catchable)
-      .filter(e -> e.getStart().getTime().isBefore(node.getTime().plusMinutes(30)))
+      .filter(e -> e.getStart().getTime().isBefore(node.getTime().plusMinutes(60)))
       .filter(e -> !ignore.stream().anyMatch(j -> ignoreForward.test(e,j)))
       .collect(first);
     if (!useable.isEmpty())
@@ -220,7 +218,7 @@ public class JourneyGraph extends Graph<JourneyStation,Journey>
         .sorted(Comparator.comparing(Journey::getStart))
         .map(p -> new JourneyPath(path).add(p))
         .filter(p -> p.getEnd().getTime().isBefore(start.getTime().plusDays(1).toLocalDate().atStartOfDay()))
-        .filter(p -> p.getEnd().getTime().isBefore(h14) || p.covers(new Station().useId("ut"),h10,h14))
+        .filter(p -> p.getStart().getTime().isAfter(h14) || p.getEnd().getTime().isBefore(h14) || p.covers(new Station().useId("ut"),h10,h14))
         .iterator();
       while (it.hasNext())
       {
