@@ -76,6 +76,15 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
       .anyMatch(c -> c.hasNode(node));
   }
   
+  // Mirror this path
+  @Override public Path<N,E> mirror()
+  {
+    Path<N,E> path = new Path<>();
+    for (int i = this.getEdges().size() - 1; i >= 0; i --)
+      path.add((E)this.getEdges().get(i).mirror());
+    return path;
+  }
+  
   // Returns all the edges in this path
   public List<E> getEdges()
   {
@@ -189,6 +198,18 @@ public class Path<N extends Node, E extends Edge<N>> extends Edge<N> implements 
     for (int i = fromIndex + 1; i < toIndex; i ++)
       path.add(this.edges.get(i));
     return path;
+  }
+  
+  // Returns if this paths is overlapping with another edge
+  public boolean passes(Path<N,E> other)
+  {
+    return this.stream().anyMatch(e -> other.hasEdge(e));
+  }
+  
+  // Returns if this paths is overlapping with another edge
+  public boolean passesMirrored(Path<N,E> other)
+  {
+    return this.passes(other.mirror());
   }
   
   // Returns if the object is equal to this one

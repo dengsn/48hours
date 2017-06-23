@@ -1,10 +1,11 @@
 package com.dengsn.hours.model.journey;
 
-import com.dengsn.hours.graph.edge.Edge;
+import com.dengsn.hours.graph.edge.Connection;
 import com.dengsn.hours.graph.edge.Path;
+import com.dengsn.hours.model.Station;
 import java.time.temporal.ChronoUnit;
 
-public class Journey extends Path<JourneyStation,Edge<JourneyStation>>
+public class Journey extends Path<JourneyStation,Connection<JourneyStation>>
 {
   // Variables
   private final Train train;
@@ -25,6 +26,16 @@ public class Journey extends Path<JourneyStation,Edge<JourneyStation>>
   public long getDuration()
   {
     return this.getStart().getTime().until(this.getEnd().getTime(),ChronoUnit.MINUTES);
+  }
+  
+  // Convert to connection
+  public Path<Station,Connection<Station>> toStationPath()
+  {
+    Path<Station,Connection<Station>> path = new Path<>();
+    this.stream()
+      .map(e -> new Connection<>(e.getStart().getStation(),e.getEnd().getStation(),e.getWeight()))
+      .forEach(path::add);
+    return path;
   }
   
   // Convert to string

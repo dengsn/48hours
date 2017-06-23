@@ -1,7 +1,8 @@
 package com.dengsn.hours.model;
 
 import com.dengsn.hours.graph.node.Node;
-import com.dengsn.hours.model.Identity;
+import com.dengsn.hours.model.journey.JourneyStation;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Station implements Node, Identity
@@ -84,5 +85,11 @@ public class Station implements Node, Identity
     hash = 19 * hash + (int) (Double.doubleToLongBits(this.latitude) ^ (Double.doubleToLongBits(this.latitude) >>> 32));
     hash = 19 * hash + (int) (Double.doubleToLongBits(this.longitude) ^ (Double.doubleToLongBits(this.longitude) >>> 32));
     return hash;
+  }
+  
+  // Create a journey station from this station
+  public JourneyStation atTime(LocalDateTime time)
+  {
+    return new JourneyStation(this,time,null);
   }
 }

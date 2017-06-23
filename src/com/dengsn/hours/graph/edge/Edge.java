@@ -30,17 +30,17 @@ public abstract class Edge<N extends Node> implements Comparable<Edge<N>>
   }
   
   // Mirror this edge
-  //public abstract Edge<N> mirror();
+  public abstract Edge<N> mirror();
   
   // Mirror this edge with the specified node as start
-  /*public Edge<N> mirrorTo(N node)
+  public Edge<N> mirrorTo(N node)
   {
     if (this.getStart().equals(node))
       return this;
     else if (this.getEnd().equals(node))
       return this.mirror();
     else throw new IllegalStateException(this + " does not contain " + node);
-  }*/
+  }
   
   // Returns the oppposite node in this edge
   public N getOpposite(N node)

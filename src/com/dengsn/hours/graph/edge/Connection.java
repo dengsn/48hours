@@ -53,19 +53,9 @@ public class Connection<N extends Node> extends Edge<N>
     return this.getStart().equals(node) || this.getEnd().equals(node);
   }
   
-  // Mirror this edge
-  public Connection<N> mirror()
+  // Mirror this connection
+  @Override public Connection<N> mirror()
   {
     return new Connection<>(this.getEnd(),this.getStart(),this.getWeight());
-  }
-  
-  // Mirror this edge with the node as start
-  public Connection<N> mirrorTo(Station node)
-  {
-    if (this.getStart().equals(node))
-      return this;
-    else if (this.getEnd().equals(node))
-      return this.mirror();
-    else throw new IllegalArgumentException(this + " does not contain " + node);
   }
 }

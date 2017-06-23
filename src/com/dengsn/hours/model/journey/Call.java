@@ -1,15 +1,15 @@
 package com.dengsn.hours.model.journey;
 
-import com.dengsn.hours.model.journey.Train;
 import com.dengsn.hours.model.Station;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAccessor;
 
 public class Call
 {
   // Variables
   private Train train;
-  private LocalDateTime arrival;
-  private LocalDateTime departure;
+  private TemporalAccessor arrival;
+  private TemporalAccessor departure;
   private Station station;
   private String platform;
   private int sequence;
@@ -25,20 +25,20 @@ public class Call
     this.train = train;
     return this;
   }
-  public LocalDateTime getArrival()
+  public TemporalAccessor getArrival()
   {
     return this.arrival;
   }
-  public Call useArrival(LocalDateTime arrival)
+  public Call useArrival(TemporalAccessor arrival)
   {
     this.arrival = arrival;
     return this;
   }
-  public LocalDateTime getDeparture()
+  public TemporalAccessor getDeparture()
   {
     return this.departure;
   }
-  public Call useDeparture(LocalDateTime departure)
+  public Call useDeparture(TemporalAccessor departure)
   {
     this.departure = departure;
     return this;
@@ -83,6 +83,10 @@ public class Call
   // Convert to string
   @Override public String toString()
   {
-    return "[" + this.getPlatform() + "] " + this.getStation().toString();
+    StringBuilder sb = new StringBuilder(); 
+    sb.append(this.getDeparture()).append(" ").append(this.station.toString());
+    if (this.platform != null && !this.platform.equals("0"))
+      sb.append(" (spoor ").append(this.platform).append(")");
+    return sb.toString();
   }
 }

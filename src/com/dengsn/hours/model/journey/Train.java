@@ -2,6 +2,7 @@ package com.dengsn.hours.model.journey;
 
 import com.dengsn.hours.model.Identity;
 import com.dengsn.hours.model.util.Service;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.LinkedList;

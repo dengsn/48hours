@@ -72,7 +72,7 @@ public class Graph<N extends Node, E extends Edge<N>>
   }
   
   // Returns all direct edges from a node
-  public LinkedList<E> getDirectEdges(N node, List<E> ignore)
+  public List<E> getDirectEdges(N node, List<E> ignore)
   {
     return this.getEdges().stream()
       .filter(e -> e.getStart().equals(node))
@@ -81,7 +81,7 @@ public class Graph<N extends Node, E extends Edge<N>>
   }
   
   // Returns all direct edges from a node without ignore list
-  public LinkedList<E> getDirectEdges(N node)
+  public List<E> getDirectEdges(N node)
   {
     return this.getDirectEdges(node,new LinkedList<>());
   }
@@ -92,35 +92,6 @@ public class Graph<N extends Node, E extends Edge<N>>
     return this.getDirectEdges(node).stream()
       .map(e -> (N)e.getOpposite(node))
       .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
-  
-  // Calculates the forced connection from a node
-  private Path<N,E> getForcedPath(E edge, List<E> ignore)
-  {
-    // Get the direct connections from this connection
-    ignore.add(edge);
-    LinkedList<E> list = this.getDirectEdges(edge.getEnd(),ignore);
-    Path<N,E> path = new Path<>(edge);
-    
-    // Check for dead ends and intersections
-    if (list.isEmpty() || list.size() > 1)
-      return path;
-    
-    // Add all forced connections from the current connection
-    E next = list.getFirst();
-    return path.combine(this.getForcedPath(next,ignore));
-  }
-   
-  // Returns all forced edges from a node
-  public LinkedList<Path<N,E>> getForcedEdges(N node, List<E> ignore)
-  {
-    return this.getDirectEdges(node,ignore).stream()
-      .map(c -> this.getForcedPath(c,ignore))
-      .collect(Collectors.toCollection(LinkedList::new));
-  }
-  public LinkedList<Path<N,E>> getForcedEdges(N node)
-  {
-    return this.getForcedEdges(node,new LinkedList<>());
   }
   
   // Get the shortest path between two nodes

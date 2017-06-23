@@ -4,10 +4,10 @@ import com.dengsn.hours.model.journey.Call;
 import com.dengsn.hours.csv.CSVIterator;
 import com.dengsn.hours.graph.ConnectionGraph;
 import com.dengsn.hours.graph.edge.Connection;
-import com.dengsn.hours.graph.edge.Edge;
 import com.dengsn.hours.model.Station;
 import com.dengsn.hours.model.journey.Journey;
 import com.dengsn.hours.model.journey.JourneyGraph;
+import com.dengsn.hours.model.journey.JourneyPath;
 import com.dengsn.hours.model.journey.JourneyStation;
 import com.dengsn.hours.model.journey.Train;
 import com.dengsn.hours.model.journey.TrainType;
@@ -16,11 +16,13 @@ import com.dengsn.hours.model.util.Service;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
-import java.util.Collections;
-import java.util.Comparator;
+import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +30,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Feed
+public final class Feed
 {
   // Constants
   private final static DateTimeFormatter SERVICE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -62,6 +64,8 @@ public class Feed
     this.connectionGraph = new ConnectionGraph<>(this.stations.asSet(),this.connections);
     System.out.println("Created connection graph: " + this.connectionGraph);
     
+    // Remove edges that are not possible
+    
     // Read other data
     this.services = this.readServices();
     this.agencies = this.readAgencies();
@@ -69,10 +73,12 @@ public class Feed
     this.trains = this.readTrains();
         
     // Map the trains to journeys
+    List<String> ignore = Arrays.asList("910-CNL","100-HSN","200-IC","100-SPR","52-ST","54-ST","60-ST","100-ST","400-ST","500-ST","700-ST","910-ST","911-ST","920-ST","200-THA");
     this.journeys = new HashSet<>();
     this.trains.stream()
       .filter(train -> train.getType().getType() == TrainType.Type.RAIL)
-      .filter(train -> train.getService().isValid(this.date))
+      .filter(train -> !ignore.contains(train.getType().getId()))
+      .filter(train -> train.getService().isValid(this.date) || train.getService().isValid(this.date.minusDays(1)))
       .forEach(train -> 
       {
         try
@@ -105,9 +111,22 @@ public class Feed
                 connection = this.getConnectionGraph().getEdgeBetween(departure.getStation(),arrival.getStation());
               } while (connection == null);
               
+              //  Check valid dates
+              LocalDateTime departureTime, arrivalTime;
+              if (train.getService().isValid(this.date.minusDays(1)))
+              {
+                departureTime = Feed.formatCallTime(this.date.minusDays(1),departure.getDeparture());
+                arrivalTime = Feed.formatCallTime(this.date.minusDays(1),arrival.getArrival());
+              }
+              else
+              {
+                departureTime = Feed.formatCallTime(this.date,departure.getDeparture());
+                arrivalTime = Feed.formatCallTime(this.date,arrival.getArrival());
+              }
+              
               // Create a new journey
-              JourneyStation start = new JourneyStation(departure.getStation(),departure.getDeparture(),departure.getPlatform());
-              JourneyStation end = new JourneyStation(arrival.getStation(),arrival.getArrival(),arrival.getPlatform());
+              JourneyStation start = new JourneyStation(departure.getStation(),departureTime,departure.getPlatform());
+              JourneyStation end = new JourneyStation(arrival.getStation(),arrivalTime,arrival.getPlatform());
               journey.add(new Connection<>(start,end,connection.getWeight()));
               
               // Update the last call
@@ -115,7 +134,8 @@ public class Feed
             } while (!arrival.isHalting() && !calls.isEmpty());
             
             // Add the journey to the paths
-            this.journeys.add(journey);
+            if (journey.getStart().getTime().isAfter(this.date.atStartOfDay()))
+              this.journeys.add(journey);
         
             // Set the first to the next
             first = arrival;
@@ -129,6 +149,7 @@ public class Feed
     
     // Create the journey graph
     this.journeyGraph = new JourneyGraph(this.journeys);
+    
     System.out.println("Created journey graph: " + this.journeyGraph);
   }
   
@@ -201,7 +222,7 @@ public class Feed
   // Read trains and calls
   private Dict<Train> readTrains() throws FileNotFoundException
   {
-    // Read trains
+    // Read trains on the day
     Dict<Train> trains =  new CSVIterator(new FileReader("data/trains.txt")).stream()
       .map(record -> new Train()
         .useId(record.get(3))
@@ -215,8 +236,8 @@ public class Feed
     new CSVIterator(new FileReader("data/calls.txt")).stream()
       .map(record -> new Call()
         .useTrain(trains.get(record.get(0)))
-        .useArrival(this.date.atTime(LocalTime.parse(record.get(1),CALL_FORMATTER)))
-        .useDeparture(this.date.atTime(LocalTime.parse(record.get(2),CALL_FORMATTER)))
+        .useArrival(CALL_FORMATTER.parse(record.get(1)))
+        .useDeparture(CALL_FORMATTER.parse(record.get(2)))
         .useStation(this.getStations().get(record.get(3)))
         .usePlatform(record.get(4))
         .useSequence(record.getInt(5))
@@ -290,5 +311,71 @@ public class Feed
   public JourneyGraph getJourneyGraph()
   {
     return this.journeyGraph;
+  }
+  
+  // Formats a call time
+  private static LocalDateTime formatCallTime(LocalDate date, TemporalAccessor time)
+  {
+    Period excessDays = time.query(DateTimeFormatter.parsedExcessDays());
+    return date.plusDays(excessDays.getDays()).atTime(LocalTime.from(time));
+  }
+  
+  // Main function
+  public static void main(String[] args) throws FileNotFoundException
+  {
+    System.out.println("Generate the most optimal and longest route to travel in 24 hours on the Dutch");
+    System.out.println("railway system -- https://github.com/dengsn/48hours");
+    System.out.println();
+    
+    Feed feed = new Feed(LocalDate.of(2017,6,24));
+    
+    //Path<Station,Connection<Station>> path = feed.getConnectionGraph().getShortestPath(feed.getStations().get("ut"),feed.getStations().get("asd"));
+    //System.out.println(path); 
+    //path.forEach(p -> System.out.printf("- %s%n",p));
+    
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ledn"),feed.getStations().get("shl"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("shl"),feed.getStations().get("ledn"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ht"),feed.getStations().get("btl"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("btl"),feed.getStations().get("ht"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ht"),feed.getStations().get("tb"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("tb"),feed.getStations().get("ht"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("zl"),feed.getStations().get("kpn"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("kpn"),feed.getStations().get("zl"),feed.getConnectionGraph());
+    
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("rtd"),feed.getStations().get("ddr"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ddr"),feed.getStations().get("bd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("bd"),feed.getStations().get("tb"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("tb"),feed.getStations().get("ehv"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ehv"),feed.getStations().get("tb"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("tb"),feed.getStations().get("bd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("bd"),feed.getStations().get("ddr"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ddr"),feed.getStations().get("rtd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("rtd"),feed.getStations().get("dt"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("dt"),feed.getStations().get("gv"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("gv"),feed.getStations().get("ledn"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ledn"),feed.getStations().get("hlm"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("hlm"),feed.getStations().get("ass"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ass"),feed.getStations().get("asd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("asd"),feed.getStations().get("ut"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("asd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("asd"),feed.getStations().get("hlm"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("hlm"),feed.getStations().get("ledn"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ledn"),feed.getStations().get("rtd"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("rtd"),feed.getStations().get("ut"),feed.getConnectionGraph());
+    /*feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("amf"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("amf"),feed.getStations().get("hvs"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("hvs"),feed.getStations().get("shl"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("shl"),feed.getStations().get("zl"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("zl"),feed.getStations().get("ut"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ut"),feed.getStations().get("ah"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("ah"),feed.getStations().get("dv"),feed.getConnectionGraph());
+    feed.getJourneyGraph().removeConnection(feed.getStations().get("dv"),feed.getStations().get("es"),feed.getConnectionGraph());*/
+    
+    feed.getJourneyGraph().calculateTree();
+    
+    JourneyPath longest = feed.getJourneyGraph().getLongestPossiblePath(feed.getStations().get("ut"),feed.getDate().atTime(8,12));
+    System.out.println(longest);
+    for (Journey journey : longest)
+      System.out.printf("- %s%n",journey);
   }
 }

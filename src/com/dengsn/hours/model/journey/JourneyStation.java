@@ -93,9 +93,15 @@ public class JourneyStation implements Node, Comparable<JourneyStation>
     return hash;
   }
   
-  // Compare this journey to another
+  // Compare this journey station to another
   @Override public int compareTo(JourneyStation other)
   {
     return Comparator.comparing(JourneyStation::getTime).compare(this,other);
+  }
+  
+  // Return if this journey station is at the same station as another
+  public boolean juxtaposes(JourneyStation other)
+  {
+    return this.getStation().equals(other.getStation());
   }
 }
